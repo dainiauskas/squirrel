@@ -248,12 +248,26 @@ func (b SelectBuilder) Columns(columns ...string) SelectBuilder {
 	return builder.Extend(b, "Columns", parts).(SelectBuilder)
 }
 
+// Columns adds result columns to the query with table name.
+func (b SelectBuilder) ColumnsFrom(table string, columns ...string) SelectBuilder {
+	parts := make([]interface{}, 0, len(columns))
+	for _, str := range columns {
+		parts = append(parts, newPart(table + "." + str))
+	}
+	return builder.Extend(b, "Columns", parts).(SelectBuilder)
+}
+
 // Column adds a result column to the query.
 // Unlike Columns, Column accepts args which will be bound to placeholders in
 // the columns string, for example:
 //   Column("IF(col IN ("+squirrel.Placeholders(3)+"), 1, 0) as col", 1, 2, 3)
 func (b SelectBuilder) Column(column interface{}, args ...interface{}) SelectBuilder {
 	return builder.Append(b, "Columns", newPart(column, args...)).(SelectBuilder)
+}
+
+// ColumnAs add a result column with table name to the query.
+func (b SelectBuilder) ColumnAs(table, column, alias string) SelectBuilder {
+	return builder.Append(b, "Columns", newPart(table + "." + column + " AS " + alias)).(SelectBuilder)
 }
 
 // From sets the FROM clause of the query.
